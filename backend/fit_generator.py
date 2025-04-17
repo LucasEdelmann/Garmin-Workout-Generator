@@ -33,8 +33,7 @@ os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
 with open(output_path, "wb") as file:
 
-        write_header(file)
-        write_workout(file, workout_data['name'], workout_data['steps'])
-        write_footer(file)
-
+    write_header(file)
+    write_workout(file, workout_data['name'], workout_data['steps'])
+    write_footer(file)
     print(f"FIT-Datei erstellt und gespeichert unter {output_path}")
