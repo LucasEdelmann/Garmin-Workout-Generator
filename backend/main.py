@@ -1,9 +1,9 @@
+import os
 from fastapi import FastAPI, UploadFile, File
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import pandas as pd
 from io import BytesIO
-import os
 
 app = FastAPI()
 
@@ -22,7 +22,7 @@ def create_tcx_file(training_plan):
     if not os.path.exists(static_dir):
         os.makedirs(static_dir)
 
-    # Die TCX-Datei erstellen
+    # Die TCX-Datei erstellen und sicherstellen, dass sie die richtige Endung hat
     tcx_file_name = os.path.join(static_dir, "training_plan.tcx")
     with open(tcx_file_name, 'w') as file:
         file.write(f"<?xml version='1.0' encoding='UTF-8'?>\n")
