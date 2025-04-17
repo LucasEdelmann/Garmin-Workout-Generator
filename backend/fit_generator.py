@@ -27,7 +27,12 @@ def write_footer(file):
 
 # Hauptfunktion zum Erstellen der FIT-Datei
 def create_fit_file(workout_data, output_path="backend/output/workout.fit"):
-    with open(output_path, "wb") as file:
+   import os
+
+os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+with open(output_path, "wb") as file:
+
         write_header(file)
         write_workout(file, workout_data['name'], workout_data['steps'])
         write_footer(file)
