@@ -1,33 +1,48 @@
 from fastapi import FastAPI, File, UploadFile
-import shutil
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-from pathlib import Path
+import pandas as pd
+from io import BytesIO
+import os
+
+# Für die Erstellung einer .FIT-Datei benötigst du eine Bibliothek
+# Hier simulieren wir das Erstellen einer Datei. Du kannst später die tatsächliche Generierung integrieren.
 
 app = FastAPI()
 
-# Statische Dateien (Frontend) laden
-app.mount("/", StaticFiles(directory="frontend", html=True), name="static")
+# Funktion zum Erstellen einer .FIT-Datei
+def create_fit_file(training_plan):
+    # Dies ist ein Platzhalter für die tatsächliche Logik zur FIT-Datei-Erstellung.
+    # Hier könntest du die Logik einfügen, die das FIT-Format entsprechend den Trainingsdaten generiert.
+    
+    fit_file_name = "training_plan.fit"
+    # Zum Beispiel speichern wir einfach die Trainingsplan-Daten in eine Textdatei.
+    with open(fit_file_name, 'w') as file:
+        file.write(f"Training Plan - {training_plan}\n")
+        file.write("Weitere FIT-Daten würden hier folgen.\n")
+    
+    return fit_file_name
 
-# Route zum Hochladen der Datei
-@app.post("/upload")
-async def upload_file(file: UploadFile = File(...)):
-    # Definiere den Speicherort für die hochgeladene Datei
-    file_location = f"uploaded_files/{file.filename}"
+# Route zum Hochladen der Excel-Datei und Erstellen der .FIT-Datei
+@app.post("/create_fit/")
+async def create_fit(file: UploadFile = File(...)):
+    # Die Excel-Datei aus dem Upload lesen
+    contents = await file.read()
+    df = pd.read_excel(BytesIO(contents))
 
-    # Speichern der hochgeladenen Datei
-    Path("uploaded_files").mkdir(parents=True, exist_ok=True)  # Stelle sicher, dass der Ordner existiert
-    with open(file_location, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    # Hier drucken wir die Inhalte der Excel-Datei für Debugging-Zwecke
+    print(df)
 
-    # Hier kannst du die Datei dann weiter verarbeiten
-    # Zum Beispiel in eine FIT-Datei umwandeln
+    # Erstellen des Trainingsplans (dies sollte die Logik zum Konvertieren in das FIT-Format beinhalten)
+    training_plan = ""
+    for index, row in df.iterrows():
+        training_plan += f"Phase: {row['Phase']}, Typ: {row['Typ']}, Dauer: {row['Dauer (min)']} min, Pace: {row['Pace (min/km)']}\n"
 
-    return {"message": f"Die Datei {file.filename} wurde erfolgreich hochgeladen."}
+    # Erstelle eine .FIT-Datei (dieser Schritt ist aktuell ein Platzhalter)
+    fit_file_path = create_fit_file(training_plan)
 
-# Route zum Herunterladen der generierten FIT-Datei
-@app.get("/download")
-def download_fit():
-    # Gib hier den richtigen Pfad zur erzeugten FIT-Datei an
-    file_path = "uploaded_files/workout.fit"  # Beispielhafte Pfadangabe
-    return FileResponse(file_path, media_type='application/octet-stream', filename="workout.fit")
+    # Die Datei zurückgeben (oder eine andere Antwort je nach Implementierung)
+    return {"message": "FIT-Datei erstellt", "fit_file_path": fit_file_path}
+
+# Start der FastAPI-Anwendung
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
