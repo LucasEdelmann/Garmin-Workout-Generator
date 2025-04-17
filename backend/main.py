@@ -19,6 +19,10 @@ async def get_home():
 
 # Funktion zum Erstellen einer TCX-Datei
 def create_tcx_file(training_plan):
+    # Erstelle den Ordner, falls er nicht existiert
+    output_dir = "frontend/static"
+    os.makedirs(output_dir, exist_ok=True)  # Dieser Schritt stellt sicher, dass der Ordner existiert
+    
     # Erstelle die XML-Struktur
     tcx = ET.Element("TrainingCenterDatabase", xmlns="http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2")
 
@@ -37,7 +41,7 @@ def create_tcx_file(training_plan):
         pace.text = str(phase['Pace'])
         
     # Dateipfad für TCX-Datei
-    tcx_file_name = "frontend/static/training_plan.tcx"
+    tcx_file_name = os.path.join(output_dir, "training_plan.tcx")
     
     # Speichern der XML-Datei
     tree = ET.ElementTree(tcx)
