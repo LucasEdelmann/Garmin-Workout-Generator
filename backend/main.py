@@ -1,9 +1,10 @@
-```python
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-import shutil, os, uuid, zipfile
-from fit_generator import generate_fit_files
+import shutil
+import os
+import uuid
+from fit_generator import generate_fit_files  # Importiere die generierte FIT-Logik
 
 app = FastAPI()
 
@@ -22,9 +23,10 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 @app.post("/upload")
-async def upload_file(file: UploadFile = File(...)):
+async def upload_file(file: UploadFile):
     filename = f"{uuid.uuid4()}_{file.filename}"
     filepath = os.path.join(UPLOAD_DIR, filename)
+    
     with open(filepath, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
@@ -33,5 +35,4 @@ async def upload_file(file: UploadFile = File(...)):
 
 @app.get("/download/{zip_filename}")
 async def download_zip(zip_filename: str):
-    return FileResponse(os.path.join(OUTPUT_DIR, zip_filename), media_type='application/zip', filename=zip_filename)
-```
+    return FileResponse(os.path.join(OUTPUT_DIR, zip_filename), media_type="application/zip", filename=zip_filename)
