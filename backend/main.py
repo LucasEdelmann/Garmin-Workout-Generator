@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import pandas as pd
 from io import BytesIO
-import os
+import struct
 
 app = FastAPI()
 
@@ -15,22 +15,33 @@ app.mount("/static", StaticFiles(directory="frontend"), name="static")
 async def get_home():
     return FileResponse("frontend/index.html")
 
-
-# Funktion zum Erstellen einer .FIT-Datei
-def create_fit_file(training_plan):
-    # Sicherstellen, dass der 'static' Ordner existiert
-    static_dir = "frontend/static"
-    os.makedirs(static_dir, exist_ok=True)
-
-    # Den Dateinamen dynamisch erstellen
-    fit_file_name = "training_plan.fit"
-    fit_file_path = os.path.join(static_dir, fit_file_name)
-
-    # Erstelle die FIT-Datei im richtigen Ordner
-    with open(fit_file_path, 'w') as file:
-        file.write(f"Training Plan - {training_plan}\n")
-        file.write("Weitere FIT-Daten würden hier folgen.\n")
+# Funktion zum Erstellen der Garmin FIT-Datei
+def create_garmin_fit(training_data):
+    # Erstellen eines Basis-Header für die FIT-Datei
+    header = b"FIT"
+    file_type = struct.pack("B", 0)  # 0 = Aktivität
+    protocol_version = struct.pack("B", 2)  # Protocol Version
     
+    # Einfache Header-Daten für den Anfang
+    header_data = header + file_type + protocol_version
+    
+    # Erstellen einer List der Trainingsphasen
+    activities = []
+    for phase in training_data:
+        phase_data = f"Phase: {phase['Phase']}, Typ: {phase['Typ']}, Dauer: {phase['Dauer']} min, Pace: {phase['Pace']}\n"
+        activities.append(phase_data)
+    
+    # Konvertieren der Trainingsphasen in Bytes
+    activity_data = b"".join([phase.encode("utf-8") for phase in activities])
+
+    # Generieren des finalen FIT-File-Inhalts
+    fit_data = header_data + activity_data
+
+    # Speichern der FIT-Datei im aktuellen Verzeichnis
+    fit_file_path = "frontend/static/training_plan.fit"
+    with open(fit_file_path, "wb") as f:
+        f.write(fit_data)
+
     return fit_file_path
 
 # Route zum Hochladen der Excel-Datei und Erstellen der .FIT-Datei
@@ -41,12 +52,17 @@ async def create_fit(file: UploadFile = File(...)):
     df = pd.read_excel(BytesIO(contents))
 
     # Verarbeite die Excel-Daten (hier als Textzusammenfassung, kann weiter angepasst werden)
-    training_plan = ""
+    training_data = []
     for index, row in df.iterrows():
-        training_plan += f"Phase: {row['Phase']}, Typ: {row['Typ']}, Dauer: {row['Dauer (min)']} min, Pace: {row['Pace (min/km)']}\n"
+        phase = {
+            "Phase": row['Phase'],
+            "Typ": row['Typ'],
+            "Dauer": row['Dauer (min)'],
+            "Pace": f"{row['Pace (min/km)'].split('-')[0]} - {row['Pace (min/km)'].split('-')[1]}"
+        }
+        training_data.append(phase)
 
     # Erstelle die .FIT-Datei
-    fit_file_path = create_fit_file(training_plan)
+    fit_file_path = create_garmin_fit(training_data)
 
-    # Gebe den relativen Pfad der Datei zurück, um sie im Frontend zum Download anzubieten
-    return {"message": "FIT-Datei erstellt", "fit_file_path": f"/static/{os.path.basename(fit_file_path)}"}
+    return {"message": "FIT-Datei erstellt", "fit_file_path": fit_file_path}
