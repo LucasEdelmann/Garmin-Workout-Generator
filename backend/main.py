@@ -4,7 +4,8 @@ from fastapi.responses import FileResponse
 import shutil
 import os
 import uuid
-from fit_generator import generate_fit_files  # Importiere die generierte FIT-Logik
+from backend.fit_generator import generate_fit_files
+
 
 app = FastAPI()
 
