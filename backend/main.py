@@ -4,7 +4,6 @@ from fastapi.responses import FileResponse
 import pandas as pd
 from io import BytesIO
 import os
-import xml.etree.ElementTree as ET
 
 app = FastAPI()
 
@@ -16,60 +15,35 @@ app.mount("/static", StaticFiles(directory="frontend"), name="static")
 async def get_home():
     return FileResponse("frontend/index.html")
 
-
-# Funktion zum Erstellen einer TCX-Datei
+# Funktion zum Erstellen einer .tcx-Datei
 def create_tcx_file(training_plan):
-    # Erstelle den Ordner, falls er nicht existiert
-    output_dir = "frontend/static"
-    os.makedirs(output_dir, exist_ok=True)  # Dieser Schritt stellt sicher, dass der Ordner existiert
-    
-    # Erstelle die XML-Struktur
-    tcx = ET.Element("TrainingCenterDatabase", xmlns="http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2")
-
-    # Workout-Tag erstellen
-    workouts = ET.SubElement(tcx, "Workouts")
-    
-    for phase in training_plan:
-        workout = ET.SubElement(workouts, "Workout", Sport="Running")
-        
-        # Informationen zur Phase hinzufügen
-        activity = ET.SubElement(workout, "Step", Type="Time")
-        duration = ET.SubElement(activity, "Duration")
-        duration.text = str(phase['Dauer'])
-        
-        pace = ET.SubElement(activity, "Pace")
-        pace.text = str(phase['Pace'])
-        
-    # Dateipfad für TCX-Datei
-    tcx_file_name = os.path.join(output_dir, "training_plan.tcx")
-    
-    # Speichern der XML-Datei
-    tree = ET.ElementTree(tcx)
-    tree.write(tcx_file_name)
+    # Hier erstellen wir eine einfache TCX-Datei (kann weiter verfeinert werden)
+    tcx_file_name = "frontend/static/training_plan.tcx"  # Richtige Endung verwenden
+    with open(tcx_file_name, 'w') as file:
+        file.write(f"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+        file.write("<TrainingCenterDatabase xmlns=\"http://www.garmin.com/xmlschemas/trainingcenter/v2\">\n")
+        file.write("<Activities>\n")
+        file.write(f"<Activity Sport=\"Running\">\n")
+        file.write(f"<Id>{training_plan}</Id>\n")
+        file.write(f"</Activity>\n")
+        file.write("</Activities>\n")
+        file.write("</TrainingCenterDatabase>\n")
     
     return tcx_file_name
 
-
-# Route zum Hochladen der Excel-Datei und Erstellen der TCX-Datei
+# Route zum Hochladen der Excel-Datei und Erstellen der .tcx-Datei
 @app.post("/create_tcx/")
 async def create_tcx(file: UploadFile = File(...)):
     # Die Excel-Datei aus dem Upload lesen
     contents = await file.read()
     df = pd.read_excel(BytesIO(contents))
 
-    # Trainingsplan verarbeiten
-    training_plan = []
+    # Verarbeite die Excel-Daten (hier als Textzusammenfassung, kann weiter angepasst werden)
+    training_plan = ""
     for index, row in df.iterrows():
-        phase_info = {
-            "Phase": row['Phase'],
-            "Typ": row['Typ'],
-            "Dauer": row['Dauer (min)'],
-            "Pace": row['Pace (min/km)'],
-        }
-        training_plan.append(phase_info)
+        training_plan += f"Phase: {row['Phase']}, Typ: {row['Typ']}, Dauer: {row['Dauer (min)']} min, Pace: {row['Pace (min/km)']}\n"
 
-    # Erstelle die TCX-Datei
+    # Erstelle die .tcx-Datei
     tcx_file_path = create_tcx_file(training_plan)
 
-    # Rückgabe des Dateipfads
     return {"message": "TCX-Datei erstellt", "tcx_file_path": f"/static/training_plan.tcx"}
