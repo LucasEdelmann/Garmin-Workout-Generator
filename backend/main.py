@@ -15,7 +15,13 @@ workout_data = {
     ]
 }
 
+import logging
+logging.basicConfig(level=logging.INFO)
+...
+
 @app.get("/create_fit")
 def create_fit():
-    create_fit_file(workout_data)  # Aufruf der Funktion zur Erstellung der FIT-Datei
+    logging.info("FIT-Erstellung gestartet")
+    create_fit_file(workout_data)
+    logging.info("FIT-Erstellung abgeschlossen")
     return {"message": "FIT-Datei wurde erfolgreich erstellt."}
