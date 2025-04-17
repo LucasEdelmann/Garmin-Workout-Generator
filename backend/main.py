@@ -17,7 +17,7 @@ async def get_home():
 
 # Funktion zum Erstellen einer .FIT-Datei
 def create_fit_file(training_plan):
-    # Platzhalter für die Logik zur FIT-Datei-Erstellung.
+    # Hier wird eine einfache FIT-Datei erstellt (als Textdatei).
     fit_file_name = "training_plan.fit"
     with open(fit_file_name, 'w') as file:
         file.write(f"Training Plan - {training_plan}\n")
@@ -32,7 +32,7 @@ async def create_fit(file: UploadFile = File(...)):
     contents = await file.read()
     df = pd.read_excel(BytesIO(contents))
 
-    # Verarbeite die Excel-Daten
+    # Verarbeite die Excel-Daten (hier als Textzusammenfassung, kann weiter angepasst werden)
     training_plan = ""
     for index, row in df.iterrows():
         training_plan += f"Phase: {row['Phase']}, Typ: {row['Typ']}, Dauer: {row['Dauer (min)']} min, Pace: {row['Pace (min/km)']}\n"
