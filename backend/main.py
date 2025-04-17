@@ -1,6 +1,7 @@
 # backend/main.py
 from fastapi import FastAPI
-from fit_generator import create_fit_file  # Importiere die Funktion aus fit_generator.py
+from .fit_generator import create_fit_file
+
 
 app = FastAPI()
 
