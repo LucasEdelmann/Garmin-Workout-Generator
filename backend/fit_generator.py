@@ -1,5 +1,6 @@
 # backend/fit_generator.py
 import struct
+import os
 
 # Schritt 1: Header einer FIT-Datei erstellen
 def write_header(file):
@@ -27,7 +28,7 @@ def write_footer(file):
 
 # Hauptfunktion zum Erstellen der FIT-Datei
 def create_fit_file(workout_data, output_path="backend/output/workout.fit"):
-   import os
+  
 
 os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
