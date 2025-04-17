@@ -1,19 +1,21 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, UploadFile, File
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 import pandas as pd
-from io import BytesIO
 import os
 
-# FastAPI-Anwendung erstellen
+from .fit_generator import create_fit_file
+
 app = FastAPI()
 
-# Statische Dateien bereitstellen (Frontend)
+# Statische Dateien mounten (z. B. script.js, style.css)
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
-# Route für die Startseite, die das Frontend bedient
+# Route für die Startseite (liefert index.html aus)
 @app.get("/")
 async def get_home():
     return FileResponse("frontend/index.html")
+
 
 # Funktion zum Erstellen einer .FIT-Datei
 def create_fit_file(training_plan):
