@@ -13,7 +13,7 @@ app.mount("/static", StaticFiles(directory="frontend"), name="static")
 # Route für die Startseite, die das Frontend bedient
 @app.get("/")
 async def get_home():
-    return {"message": "API ist live und funktioniert!"}
+    return FileResponse("frontend/index.html")
 
 # Funktion zum Erstellen einer .FIT-Datei
 def create_fit_file(training_plan):
