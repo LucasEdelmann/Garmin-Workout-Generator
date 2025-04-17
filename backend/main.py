@@ -2,6 +2,7 @@ from fastapi import FastAPI, UploadFile, File
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import pandas as pd
+from io import BytesIO
 import os
 
 from .fit_generator import create_fit_file
