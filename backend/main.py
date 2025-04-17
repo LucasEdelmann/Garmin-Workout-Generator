@@ -71,4 +71,5 @@ async def create_tcx(file: UploadFile = File(...)):
     # Erstelle die TCX-Datei
     tcx_file_path = create_tcx_file(training_plan)
 
-    return {"message": "TCX-Datei erstellt", "tcx_file_path": tcx_file_path}
+    # Rückgabe des Dateipfads
+    return {"message": "TCX-Datei erstellt", "tcx_file_path": f"/static/training_plan.tcx"}
