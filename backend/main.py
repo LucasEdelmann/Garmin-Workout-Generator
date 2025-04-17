@@ -15,12 +15,11 @@ app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
 async def get_home():
     return FileResponse("frontend/index.html")
 
-
 # Funktion zum Erstellen der TCX-Datei
 def create_tcx_file(training_plan):
-    # Hier wird das statische Verzeichnis überprüft und sichergestellt, dass es existiert
+    # Überprüfen, ob das Verzeichnis 'frontend/static' existiert, falls nicht, dann erstellen
     output_dir = 'frontend/static'
-    os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)  # Existierendes Verzeichnis wird ignoriert, wenn es schon vorhanden ist
 
     # Der Name der TCX-Datei
     tcx_file_name = os.path.join(output_dir, "training_plan.tcx")
@@ -38,7 +37,6 @@ def create_tcx_file(training_plan):
     
     # Rückgabe des relativen Pfads zur erstellten Datei
     return os.path.relpath(tcx_file_name, 'frontend/static')
-
 
 # Route zum Hochladen der Excel-Datei und Erstellen der TCX-Datei
 @app.post("/create_tcx/")
