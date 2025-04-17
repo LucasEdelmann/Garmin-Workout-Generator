@@ -1,11 +1,14 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from .fit_generator import create_fit_file
 
 app = FastAPI()
 
+# Statische Dateien (Frontend) laden
+app.mount("/", StaticFiles(directory="frontend", html=True), name="static")
+
 @app.get("/create_fit")
 def create_fit():
-    # Dummy Workout-Daten
     workout_data = {
         "name": "Intervalltraining",
         "steps": [
