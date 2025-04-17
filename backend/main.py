@@ -5,8 +5,6 @@ import pandas as pd
 from io import BytesIO
 import os
 
-from .fit_generator import create_fit_file
-
 app = FastAPI()
 
 # Statische Dateien mounten (z. B. script.js, style.css)
@@ -20,13 +18,20 @@ async def get_home():
 
 # Funktion zum Erstellen einer .FIT-Datei
 def create_fit_file(training_plan):
-    # Hier wird eine einfache FIT-Datei erstellt (als Textdatei).
+    # Sicherstellen, dass der 'static' Ordner existiert
+    static_dir = "frontend/static"
+    os.makedirs(static_dir, exist_ok=True)
+
+    # Den Dateinamen dynamisch erstellen
     fit_file_name = "training_plan.fit"
-    with open(fit_file_name, 'w') as file:
+    fit_file_path = os.path.join(static_dir, fit_file_name)
+
+    # Erstelle die FIT-Datei im richtigen Ordner
+    with open(fit_file_path, 'w') as file:
         file.write(f"Training Plan - {training_plan}\n")
         file.write("Weitere FIT-Daten würden hier folgen.\n")
     
-    return fit_file_name
+    return fit_file_path
 
 # Route zum Hochladen der Excel-Datei und Erstellen der .FIT-Datei
 @app.post("/create_fit/")
@@ -43,4 +48,5 @@ async def create_fit(file: UploadFile = File(...)):
     # Erstelle die .FIT-Datei
     fit_file_path = create_fit_file(training_plan)
 
-    return {"message": "FIT-Datei erstellt", "fit_file_path": fit_file_path}
+    # Gebe den relativen Pfad der Datei zurück, um sie im Frontend zum Download anzubieten
+    return {"message": "FIT-Datei erstellt", "fit_file_path": f"/static/{os.path.basename(fit_file_path)}"}
