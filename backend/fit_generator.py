@@ -2,8 +2,7 @@ import pandas as pd
 import os
 import uuid
 import zipfile
-from fitparse import FitFile
-from fitparse.records import FileId, Workout, WorkoutStep, Time
+from fit_sdk import FitFile, FitRecord, FitMessage, FitField
 
 def generate_fit_files(filepath, output_dir):
     # Lade CSV/Excel-Datei
@@ -16,23 +15,32 @@ def generate_fit_files(filepath, output_dir):
         # Erstelle FIT-Datei
         fit_file = FitFile()
 
-        # Erstelle FileId (Metadaten für die FIT-Datei)
-        file_id = FileId(
-            type=0,  # 0 = Activity (Workout)
-            manufacturer=1,  # Garmin
-            product=123,  # Beispielprodukt-ID
-            serial=12345678  # Beispielseriennummer
-        )
-        fit_file.add_record(file_id)
+        # Erstelle eine Datei und eine Aktivität
+        file_record = FitRecord(message_type="file_id")
+        file_record.add_field(FitField(name="type", value=0))  # 0 = Activity
+        file_record.add_field(FitField(name="manufacturer", value=1))  # Garmin
+        file_record.add_field(FitField(name="product", value=123))  # Produkt-ID
+        file_record.add_field(FitField(name="serial", value=12345678))  # Seriennummer
+        fit_file.add_record(file_record)
 
         # Erstelle das Workout
-        workout = Workout(name=row['Einheit'])
-        fit_file.add_record(workout)
+        workout_record = FitRecord(message_type="workout")
+        workout_record.add_field(FitField(name="name", value=row['Einheit']))
+        fit_file.add_record(workout_record)
 
         # Füge Schritte zum Workout hinzu
-        fit_file.add_record(WorkoutStep(name='Warm-up', duration=row['Warm-up']))
-        fit_file.add_record(WorkoutStep(name='Main', duration=row['Intervalle']))
-        fit_file.add_record(WorkoutStep(name='Cooldown', duration=row['Cool-down']))
+        fit_file.add_record(FitRecord(message_type="workout_step", fields=[
+            FitField(name="name", value="Warm-up"),
+            FitField(name="duration", value=row['Warm-up'])
+        ]))
+        fit_file.add_record(FitRecord(message_type="workout_step", fields=[
+            FitField(name="name", value="Main"),
+            FitField(name="duration", value=row['Intervalle'])
+        ]))
+        fit_file.add_record(FitRecord(message_type="workout_step", fields=[
+            FitField(name="name", value="Cooldown"),
+            FitField(name="duration", value=row['Cool-down'])
+        ]))
 
         # Speichere die FIT-Datei
         filename = f"{row['Datum']}_{row['Einheit'].replace(' ', '_')}.fit"
