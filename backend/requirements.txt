@@ -3,4 +3,5 @@ uvicorn
 python-multipart
 pandas
 openpyxl
-fit-sdk
+garminfit
+
