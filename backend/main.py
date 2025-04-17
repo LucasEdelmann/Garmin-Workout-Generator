@@ -29,12 +29,15 @@ def create_tcx_file(training_plan):
         workout = ET.SubElement(workouts, "Workout", Sport="Running")
         
         # Informationen zur Phase hinzufügen
-        for phase_info in phase:
-            activity = ET.SubElement(workout, "Step", Type="Time")
-            activity.text = str(phase_info)
+        activity = ET.SubElement(workout, "Step", Type="Time")
+        duration = ET.SubElement(activity, "Duration")
+        duration.text = str(phase['Dauer'])
+        
+        pace = ET.SubElement(activity, "Pace")
+        pace.text = str(phase['Pace'])
         
     # Dateipfad für TCX-Datei
-    tcx_file_name = "training_plan.tcx"
+    tcx_file_name = "frontend/static/training_plan.tcx"
     
     # Speichern der XML-Datei
     tree = ET.ElementTree(tcx)
