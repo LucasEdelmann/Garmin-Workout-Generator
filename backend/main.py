@@ -17,8 +17,16 @@ async def get_home():
 
 # Funktion zum Erstellen einer .tcx-Datei
 def create_tcx_file(training_plan):
-    # Hier erstellen wir eine einfache TCX-Datei (kann weiter verfeinert werden)
-    tcx_file_name = "frontend/static/training_plan.tcx"  # Richtige Endung verwenden
+    # Verzeichnis, in dem die TCX-Datei gespeichert werden soll
+    output_dir = 'frontend/static'
+
+    # Stelle sicher, dass das Verzeichnis existiert
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Der Name der TCX-Datei
+    tcx_file_name = os.path.join(output_dir, "training_plan.tcx")
+
+    # Erstelle die TCX-Datei
     with open(tcx_file_name, 'w') as file:
         file.write(f"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
         file.write("<TrainingCenterDatabase xmlns=\"http://www.garmin.com/xmlschemas/trainingcenter/v2\">\n")
