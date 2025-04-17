@@ -1,9 +1,9 @@
-import os
 from fastapi import FastAPI, UploadFile, File
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import pandas as pd
 from io import BytesIO
+import os
 
 app = FastAPI()
 
