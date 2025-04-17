@@ -1,52 +1,23 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <title>FIT-Datei Generator</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trainingsplan zu FIT-Datei</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-  <div class="bg-white p-8 rounded-xl shadow-lg w-full sm:w-96">
-    <h1 class="text-2xl font-bold text-center text-gray-700 mb-6">FIT-Datei Generator</h1>
+<body>
+    <h1>Trainingsplan erstellen und als FIT-Datei herunterladen</h1>
     
-    <!-- Datei-Upload-Input -->
-    <div class="mb-4">
-      <input type="file" id="fileInput" class="w-full py-2 px-4 border border-gray-300 rounded-md" />
+    <form id="upload-form" enctype="multipart/form-data">
+        <input type="file" id="file-upload" name="file" accept=".xlsx" required />
+        <button type="submit">Upload und Erstelle FIT-Datei</button>
+    </form>
+
+    <div id="response">
+        <!-- Hier wird die Antwort des Servers angezeigt -->
     </div>
 
-    <!-- Button zum Hochladen -->
-    <button onclick="uploadFile()" class="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
-      Datei hochladen und FIT-Datei generieren
-    </button>
-
-    <!-- Statusnachricht -->
-    <p id="status" class="text-center text-gray-500 mt-4"></p>
-
-    <!-- Download-Link (wird später angezeigt) -->
-    <p id="downloadLink" class="text-center text-blue-600 hover:underline mt-4"></p>
-  </div>
-
-  <script>
-    // JavaScript zum Hochladen der Datei und Anzeigen des Status
-    async function uploadFile() {
-      const fileInput = document.getElementById("fileInput");
-      const formData = new FormData();
-      formData.append("file", fileInput.files[0]);
-
-      const res = await fetch("/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-      document.getElementById("status").innerText = data.message;
-
-      // Wenn Upload erfolgreich war, zeige den Download-Link
-      if (res.ok) {
-        document.getElementById("downloadLink").innerHTML = 
-          '<a href="/download" class="text-blue-600 hover:underline">Hier herunterladen</a>';
-      }
-    }
-  </script>
+    <script src="/static/script.js"></script>
 </body>
 </html>
