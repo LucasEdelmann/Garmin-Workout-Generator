@@ -3,7 +3,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import pandas as pd
 from io import BytesIO
-import struct
+import os
+import xml.etree.ElementTree as ET
 
 app = FastAPI()
 
@@ -15,54 +16,52 @@ app.mount("/static", StaticFiles(directory="frontend"), name="static")
 async def get_home():
     return FileResponse("frontend/index.html")
 
-# Funktion zum Erstellen der Garmin FIT-Datei
-def create_garmin_fit(training_data):
-    # Erstellen eines Basis-Header für die FIT-Datei
-    header = b"FIT"
-    file_type = struct.pack("B", 0)  # 0 = Aktivität
-    protocol_version = struct.pack("B", 2)  # Protocol Version
+
+# Funktion zum Erstellen einer TCX-Datei
+def create_tcx_file(training_plan):
+    # Erstelle die XML-Struktur
+    tcx = ET.Element("TrainingCenterDatabase", xmlns="http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2")
+
+    # Workout-Tag erstellen
+    workouts = ET.SubElement(tcx, "Workouts")
     
-    # Einfache Header-Daten für den Anfang
-    header_data = header + file_type + protocol_version
+    for phase in training_plan:
+        workout = ET.SubElement(workouts, "Workout", Sport="Running")
+        
+        # Informationen zur Phase hinzufügen
+        for phase_info in phase:
+            activity = ET.SubElement(workout, "Step", Type="Time")
+            activity.text = str(phase_info)
+        
+    # Dateipfad für TCX-Datei
+    tcx_file_name = "training_plan.tcx"
     
-    # Erstellen einer List der Trainingsphasen
-    activities = []
-    for phase in training_data:
-        phase_data = f"Phase: {phase['Phase']}, Typ: {phase['Typ']}, Dauer: {phase['Dauer']} min, Pace: {phase['Pace']}\n"
-        activities.append(phase_data)
+    # Speichern der XML-Datei
+    tree = ET.ElementTree(tcx)
+    tree.write(tcx_file_name)
     
-    # Konvertieren der Trainingsphasen in Bytes
-    activity_data = b"".join([phase.encode("utf-8") for phase in activities])
+    return tcx_file_name
 
-    # Generieren des finalen FIT-File-Inhalts
-    fit_data = header_data + activity_data
 
-    # Speichern der FIT-Datei im aktuellen Verzeichnis
-    fit_file_path = "frontend/static/training_plan.fit"
-    with open(fit_file_path, "wb") as f:
-        f.write(fit_data)
-
-    return fit_file_path
-
-# Route zum Hochladen der Excel-Datei und Erstellen der .FIT-Datei
-@app.post("/create_fit/")
-async def create_fit(file: UploadFile = File(...)):
+# Route zum Hochladen der Excel-Datei und Erstellen der TCX-Datei
+@app.post("/create_tcx/")
+async def create_tcx(file: UploadFile = File(...)):
     # Die Excel-Datei aus dem Upload lesen
     contents = await file.read()
     df = pd.read_excel(BytesIO(contents))
 
-    # Verarbeite die Excel-Daten (hier als Textzusammenfassung, kann weiter angepasst werden)
-    training_data = []
+    # Trainingsplan verarbeiten
+    training_plan = []
     for index, row in df.iterrows():
-        phase = {
+        phase_info = {
             "Phase": row['Phase'],
             "Typ": row['Typ'],
             "Dauer": row['Dauer (min)'],
-            "Pace": f"{row['Pace (min/km)'].split('-')[0]} - {row['Pace (min/km)'].split('-')[1]}"
+            "Pace": row['Pace (min/km)'],
         }
-        training_data.append(phase)
+        training_plan.append(phase_info)
 
-    # Erstelle die .FIT-Datei
-    fit_file_path = create_garmin_fit(training_data)
+    # Erstelle die TCX-Datei
+    tcx_file_path = create_tcx_file(training_plan)
 
-    return {"message": "FIT-Datei erstellt", "fit_file_path": fit_file_path}
+    return {"message": "TCX-Datei erstellt", "tcx_file_path": tcx_file_path}
