@@ -3,4 +3,4 @@ uvicorn
 python-multipart
 pandas
 openpyxl
-fitencode
+fitparse
